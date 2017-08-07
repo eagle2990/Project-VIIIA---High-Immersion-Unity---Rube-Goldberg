@@ -25,12 +25,14 @@ public class Laser : MonoBehaviour
 
     public void SetBegining(Vector3 position)
     {
-        lineRenderer.SetPosition(0, position);
+        if (position != null)
+            lineRenderer.SetPosition(0, position);
     }
 
     public void SetEnd(Vector3 position)
     {
-        lineRenderer.SetPosition(1, position);
+        if (position != null)
+            lineRenderer.SetPosition(1, position);
     }
 
 }
