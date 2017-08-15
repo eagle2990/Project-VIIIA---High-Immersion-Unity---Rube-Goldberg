@@ -12,6 +12,7 @@ public class Constants
         public const string TELEPORT = "Teleport";
         public const string GOAL = "Goal";
         public const string RAIL = "Rail";
+        public const string WIND_AREA = "Wind Area";
     }
 
     public const float THROW_FORCE = 1.5f;
