@@ -8,6 +8,7 @@ public class GrabAndThrow : MonoBehaviour
     private SteamVR_Controller.Device device;
 
     private Transform previousParent;
+    public GameStateManager gameState;
 
     // Use this for initialization
     void Start()
@@ -39,6 +40,18 @@ public class GrabAndThrow : MonoBehaviour
                 GrabObject(other);
             }
         }
+
+        if (other.gameObject.CompareTag(Constants.ObjectsTags.STRUCTURE) && gameState.IsStateEditing())
+        {
+            if (HMDManager.IsButtonReleasedFromDevice(device, SteamVR_Controller.ButtonMask.Trigger))
+            {
+                ReleaseStructure(other);
+            }
+            else if (HMDManager.IsButtonPressedFromDevice(device, SteamVR_Controller.ButtonMask.Trigger))
+            {
+                GrabStructure(other);
+            }
+        }
     }
 
     private void RegisterDevice()
@@ -51,11 +64,9 @@ public class GrabAndThrow : MonoBehaviour
 
     void GrabObject(Collider other)
     {
-        //previousParent = other.transform.parent;
         other.transform.SetParent(transform);
         other.GetComponent<Rigidbody>().isKinematic = true;
         device.TriggerHapticPulse(2000);
-        Debug.Log("You are touching down the trigger on " + other.name);
     }
 
     void ThrowObject(Collider other)
@@ -65,5 +76,16 @@ public class GrabAndThrow : MonoBehaviour
         rigidBody.isKinematic = false;
         rigidBody.velocity = device.velocity * Constants.THROW_FORCE;
         rigidBody.angularVelocity = device.angularVelocity;
+    }
+
+    void GrabStructure(Collider other)
+    {
+        other.transform.SetParent(transform);
+        device.TriggerHapticPulse(2000);
+    }
+
+    void ReleaseStructure(Collider other)
+    {
+        other.transform.SetParent(null);
     }
 }

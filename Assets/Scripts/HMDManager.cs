@@ -6,7 +6,7 @@ using UnityEngine.VR;
 public class HMDManager : MonoBehaviour
 {
 
-    private bool HmdChoosen;
+    private static bool HmdChoosen;
 
     [Header("Vive Setup")]
     public GameObject ViveRig;
@@ -78,6 +78,34 @@ public class HMDManager : MonoBehaviour
         return false;
     }
 
+    public static bool IsButtonTouchDownFromDevice(SteamVR_Controller.Device device, ulong button)
+    {
+        if (IsViveHeadset())
+        {
+            if (IsDeviceValid(device)) return device.GetTouchDown(button);
+        }
+        return false;
+    }
+
+    public static bool IsButtonTouchFromDevice(SteamVR_Controller.Device device, ulong button)
+    {
+        if (IsViveHeadset())
+        {
+            if (IsDeviceValid(device)) return device.GetTouch(button);
+        }
+        return false;
+    }
+
+    public static bool IsButtonTouchUpFromDevice(SteamVR_Controller.Device device, ulong button)
+    {
+        if (IsViveHeadset())
+        {
+            if (IsDeviceValid(device)) return device.GetTouchUp(button);
+        }
+        return false;
+    }
+
+
     #endregion
 
     #region Vive Controller.Device propetary registration and usage
@@ -106,7 +134,7 @@ public class HMDManager : MonoBehaviour
         }
         if (!IsDeviceValid(rightHandDevice))
         {
-            RegisterLeftHandDevice();
+            RegisterRightHandDevice();
         }
     }
 
@@ -128,6 +156,36 @@ public class HMDManager : MonoBehaviour
     {
         ValidateSetup();
         return IsButtonReleasedFromDevice(leftHandDevice, SteamVR_Controller.ButtonMask.Touchpad);
+    }
+
+    public static bool IsRightTouchpadTouchDown()
+    {
+        ValidateSetup();
+        return IsButtonTouchDownFromDevice(rightHandDevice, SteamVR_Controller.ButtonMask.Touchpad);
+    }
+
+    public static bool IsRightTouchpadTouch()
+    {
+        ValidateSetup();
+        return IsButtonTouchFromDevice(rightHandDevice, SteamVR_Controller.ButtonMask.Touchpad);
+    }
+
+    public static bool IsRightTouchpadTouchUp()
+    {
+        ValidateSetup();
+        return IsButtonTouchUpFromDevice(rightHandDevice, SteamVR_Controller.ButtonMask.Touchpad);
+    }
+
+    public static bool IsRightTouchpadPressed()
+    {
+        ValidateSetup();
+        return IsButtonPressedFromDevice(rightHandDevice, SteamVR_Controller.ButtonMask.Touchpad);
+    }
+
+    public static float GetRightTouchpadXAxisMovement()
+    {
+        ValidateSetup();
+        return rightHandDevice.GetAxis(Valve.VR.EVRButtonId.k_EButton_SteamVR_Touchpad).x;
     }
     #endregion
 
@@ -166,7 +224,7 @@ public class HMDManager : MonoBehaviour
         ViveRig.SetActive(true);
         OculusRig.SetActive(false);
         HmdChoosen = true;
-        
+
     }
 
     private void ActivateOculus()

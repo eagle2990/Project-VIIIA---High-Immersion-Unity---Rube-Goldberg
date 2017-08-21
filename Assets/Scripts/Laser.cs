@@ -25,14 +25,20 @@ public class Laser : MonoBehaviour
 
     public void SetBegining(Vector3 position)
     {
-        if (position != null)
-            lineRenderer.SetPosition(0, position);
+        if (position == null)
+        {
+            position = Vector3.zero;
+        }
+        lineRenderer.SetPosition(0, position);
     }
 
     public void SetEnd(Vector3 position)
     {
-        if (position != null)
-            lineRenderer.SetPosition(1, position);
+        if (position == null)
+        {
+            position = Vector3.forward;
+        }
+        lineRenderer.SetPosition(1, position);
     }
 
 }

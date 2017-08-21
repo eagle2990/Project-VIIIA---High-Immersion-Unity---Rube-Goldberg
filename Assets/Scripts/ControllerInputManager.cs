@@ -28,37 +28,31 @@ public class ControllerInputManager : MonoBehaviour
     private Vector3 fwd;
     private Vector3 teleportLocation;
 
+    [Header("Object Menu")]
+    public GameObject objectMenu;
+    private ObjectMenuManager objectMenuManager;
+    private float swipeSum;
+    private float touchLast;
+    private float touchCurrent;
+    private float swipeDistance;
+
+
     // Use this for initialization
     void Start()
     {
-        leftHand = HMDManager.GetLeftHand();
-        rightHand = HMDManager.GetRightHand();
+        SetupTeleport();
 
-        foreach (Transform child in leftHand.transform)
-        {
-            if (child.tag == "Pointer")
-            {
-                leftHandPointer = child.gameObject;
-            }
-        }
-
-        if (teleportMaxDistance <= 0)
-        {
-            teleportMaxDistance = 10f;
-        }
-        teleportAimerObject.SetActive(false);
-        leftHandPointer.SetActive(false);
-        isValidTeleport = false;
-        teleportMarkerScript = teleportAimerObject.GetComponent<TeleportMarker>();
-        laser = leftHandPointer.GetComponent<Laser>();
+        SetupObjectMenu();
     }
 
     // Update is called once per frame
     void Update()
     {
         EnableTeleport();
+        EnableObjectMenu();
     }
 
+    #region Teleport Logic
     private void EnableTeleport()
     {
         if (HMDManager.IsLeftTouchpadHold())
@@ -111,12 +105,14 @@ public class ControllerInputManager : MonoBehaviour
 
     private void ActivateTeleportMarker()
     {
+        ValidateTeleportSetup();
         teleportAimerObject.SetActive(true);
         leftHandPointer.SetActive(true);
     }
 
     private void DeactivateTeleportMarker()
     {
+        ValidateTeleportSetup();
         leftHandPointer.SetActive(false);
         teleportAimerObject.SetActive(false);
     }
@@ -129,4 +125,137 @@ public class ControllerInputManager : MonoBehaviour
         if (startPoint != null)
             laser.SetBegining(startPoint);
     }
+
+    private void SetupTeleport()
+    {
+        leftHand = HMDManager.GetLeftHand();
+        if (leftHand != null)
+        {
+            foreach (Transform child in leftHand.transform)
+            {
+                if (child.gameObject.CompareTag(Constants.ObjectsTags.POINTER))
+                {
+                    leftHandPointer = child.gameObject;
+                }
+            }
+        }
+        
+        if (teleportMaxDistance <= 0)
+        {
+            teleportMaxDistance = 10f;
+        }
+        teleportAimerObject.SetActive(false);
+        if (leftHandPointer != null)
+        {
+            leftHandPointer.SetActive(false);
+            laser = leftHandPointer.GetComponent<Laser>();
+        }
+        
+        isValidTeleport = false;
+        teleportMarkerScript = teleportAimerObject.GetComponent<TeleportMarker>();
+        
+    }
+
+    private void ValidateTeleportSetup()
+    {
+        if (leftHand == null || leftHandPointer == null || teleportMarkerScript == null || laser ==  null)
+        {
+            SetupTeleport();
+        }
+    }
+    #endregion
+
+    #region Object Menu Logic
+    private void EnableObjectMenu()
+    {
+        if (HMDManager.IsRightTouchpadTouchDown())
+        {
+            objectMenu.SetActive(true);
+            touchLast = HMDManager.GetRightTouchpadXAxisMovement();
+        }
+
+        if (HMDManager.IsRightTouchpadTouch())
+        {
+            objectMenu.SetActive(true);
+            touchCurrent = HMDManager.GetRightTouchpadXAxisMovement();
+            swipeDistance = touchCurrent - touchLast;
+            touchLast = touchCurrent;
+            swipeSum += swipeDistance;
+
+
+            if (swipeSum > 0.4f)
+            {
+                swipeSum = 0;
+                SwipeRight();
+            }
+
+            if (swipeSum < -0.4f)
+            {
+                swipeSum = 0;
+                SwipeLeft();
+            }
+        }
+
+        if(HMDManager.IsRightTouchpadTouchUp())
+        {
+            SwipeVarsReset();
+        }
+
+        if (HMDManager.IsRightTouchpadPressed())
+        {
+            if (objectMenu.activeSelf)
+            {
+                SpawnObject();
+            }
+            
+        }
+    }
+
+    void SpawnObject()
+    {
+        ValidateObjectMenu();
+        objectMenuManager.SpawnCurrentObject(rightHand.transform.position + (rightHand.transform.forward * 1.5f));
+    }
+
+    void SwipeLeft()
+    {
+        objectMenuManager.MenuLeft();
+    }
+
+    void SwipeRight()
+    {
+        objectMenuManager.MenuRight();
+    }
+
+    void SwipeVarsReset()
+    {
+        swipeSum = 0;
+        touchCurrent = 0;
+        touchLast = 0;
+        objectMenu.SetActive(false);
+    }
+
+    private void SetupObjectMenu()
+    {
+        rightHand = HMDManager.GetRightHand();
+        if (objectMenu != null)
+        {
+            objectMenuManager = objectMenu.GetComponent<ObjectMenuManager>();
+        }
+        objectMenu.SetActive(false);
+    }
+
+    private void ValidateObjectMenu()
+    {
+        if (rightHand == null || objectMenuManager == null)
+        {
+            SetupObjectMenu();
+        }
+
+        if (objectMenu == null)
+        {
+            Debug.LogWarning("You need to setup the Object Menu.");
+        }
+    }
+    #endregion
 }

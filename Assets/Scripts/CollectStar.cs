@@ -5,11 +5,12 @@ using UnityEngine;
 public class CollectStar : MonoBehaviour {
     public AudioClip clip;
 
-    private void OnCollisionEnter(Collision collision)
+
+    private void OnTriggerEnter(Collider other)
     {
-        if (collision.gameObject.CompareTag(Constants.ObjectsTags.THROWABLE))
+        if (other.gameObject.CompareTag(Constants.ObjectsTags.THROWABLE))
         {
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
     }
 }
