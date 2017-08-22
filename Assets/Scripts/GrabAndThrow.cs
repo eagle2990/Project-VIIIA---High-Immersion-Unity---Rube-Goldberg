@@ -29,6 +29,31 @@ public class GrabAndThrow : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
+
+        //if (HMDManager.IsButtonPressedFromDevice(device, SteamVR_Controller.ButtonMask.Trigger))
+        //{
+        //    if (other.gameObject.CompareTag(Constants.ObjectsTags.THROWABLE))
+        //    {
+        //        GrabObject(other);
+        //    }
+        //    else if (other.gameObject.CompareTag(Constants.ObjectsTags.STRUCTURE) && gameState.IsStateEditing())
+        //    {
+        //        GrabStructure(other);
+        //    }
+
+        //}
+
+        //if (HMDManager.IsButtonReleasedFromDevice(device, SteamVR_Controller.ButtonMask.Trigger))
+        //{
+        //    if (other.gameObject.CompareTag(Constants.ObjectsTags.THROWABLE))
+        //    {
+        //        ThrowObject(other);
+        //    }
+        //    else
+        //    {
+        //        ReleaseStructure(other);
+        //    }
+        //}
         if (other.gameObject.CompareTag(Constants.ObjectsTags.THROWABLE))
         {
             if (HMDManager.IsButtonReleasedFromDevice(device, SteamVR_Controller.ButtonMask.Trigger))
@@ -43,13 +68,13 @@ public class GrabAndThrow : MonoBehaviour
 
         if (other.gameObject.CompareTag(Constants.ObjectsTags.STRUCTURE) && gameState.IsStateEditing())
         {
-            if (HMDManager.IsButtonReleasedFromDevice(device, SteamVR_Controller.ButtonMask.Trigger))
-            {
-                ReleaseStructure(other);
-            }
-            else if (HMDManager.IsButtonPressedFromDevice(device, SteamVR_Controller.ButtonMask.Trigger))
+            if (HMDManager.IsButtonPressedFromDevice(device, SteamVR_Controller.ButtonMask.Trigger))
             {
                 GrabStructure(other);
+            }
+            else if (HMDManager.IsButtonReleasedFromDevice(device, SteamVR_Controller.ButtonMask.Trigger))
+            {
+                ReleaseStructure(other);
             }
         }
     }
@@ -67,6 +92,10 @@ public class GrabAndThrow : MonoBehaviour
         other.transform.SetParent(transform);
         other.GetComponent<Rigidbody>().isKinematic = true;
         device.TriggerHapticPulse(2000);
+        if (gameState.IsOutsideSafeArea())
+        {
+            gameState.CheatAlert();
+        }
     }
 
     void ThrowObject(Collider other)
@@ -81,11 +110,13 @@ public class GrabAndThrow : MonoBehaviour
     void GrabStructure(Collider other)
     {
         other.transform.SetParent(transform);
+        other.GetComponent<Rigidbody>().isKinematic = true;
         device.TriggerHapticPulse(2000);
     }
 
     void ReleaseStructure(Collider other)
     {
         other.transform.SetParent(null);
+        other.GetComponent<Rigidbody>().isKinematic = true;
     }
 }

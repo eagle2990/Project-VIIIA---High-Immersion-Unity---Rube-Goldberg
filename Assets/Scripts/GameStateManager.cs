@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 
-public class GameStateManager : MonoBehaviour {
+public class GameStateManager : MonoBehaviour
+{
     private GameState currentGameState = GameState.EDIT;
     public Color playStateColor;
     public Color editStateColor;
@@ -16,19 +17,31 @@ public class GameStateManager : MonoBehaviour {
     public Material ballCheatMaterial;
     public GameObject playerBall;
 
-    public static List<GameObject> collectableStars;
+    private List<GameObject> collectableStars;
+    private int starsCount;
 
     private bool outsideSafeArea = false;
     private bool leftHandPlayerInside = true;
     private bool rightHandPlayerInside = true;
-	// Use this for initialization
-	void Start () {
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    // Use this for initialization
+    void Start()
+    {
+        
+    }
+
+    // Update is called once per frame
+    void FixedUpdate()
+    {
+        if (collectableStars == null)
+        {
+            collectableStars = new List<GameObject>(GameObject.FindGameObjectsWithTag(Constants.ObjectsTags.COLLECTABLE));
+        }
+    }
+
+    public bool IsOutsideSafeArea()
+    {
+        return outsideSafeArea;
+    }
 
     public GameState GetGameState()
     {
@@ -55,7 +68,7 @@ public class GameStateManager : MonoBehaviour {
         currentGameState = GameState.PLAY;
         safeArea.effectColor = playStateColor;
         playerBall.GetComponent<Renderer>().material = ballPlayMaterial;
-        
+
     }
 
     public void Edit()
@@ -72,6 +85,19 @@ public class GameStateManager : MonoBehaviour {
         outsideSafeArea = true;
         safeArea.effectColor = cheatStateColor;
         playerBall.GetComponent<Renderer>().material = ballCheatMaterial;
+    }
+
+    public bool AreStarsCollected()
+    {
+        int collected = 0;
+        foreach (GameObject star in collectableStars)
+        {
+            if(!star.activeSelf)
+            {
+                collected++;
+            }
+        }
+        return collected == collectableStars.Count;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -113,15 +139,21 @@ public class GameStateManager : MonoBehaviour {
 
         if (other.gameObject.CompareTag(Constants.ObjectsTags.THROWABLE))
         {
-            if(leftHandPlayerInside && rightHandPlayerInside)
+            if (leftHandPlayerInside && rightHandPlayerInside && PlayerIsNotKinematic())
             {
                 Play();
-            } else
+            }
+            else
             {
                 CheatAlert();
             }
             outsideSafeArea = true;
         }
+    }
+
+    private bool PlayerIsNotKinematic()
+    {
+        return !playerBall.GetComponent<Rigidbody>().isKinematic; ;
     }
 }
 
